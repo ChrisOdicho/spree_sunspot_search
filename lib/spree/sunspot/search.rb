@@ -29,7 +29,7 @@ module Spree
 
         curr_page = @properties[:page] || 1
         per_page  = @properties[:per_page] || Spree::Config[:products_per_page]
-        @products = @products_scope.includes([:master]).page(curr_page).per(per_page)
+        @products = @products_scope.includes([:master]).page(curr_page).per(per_page).order(@properties[:order_by])
       end
 
       def similar_products(product, *field_names)
