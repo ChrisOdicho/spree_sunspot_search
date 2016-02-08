@@ -19,7 +19,7 @@ module Spree
       module InstanceMethods
         def filter
           if params[:id]
-            taxon = Spree::Taxon.find_by_linkname(params[:id])
+            taxon = Spree::Taxon.find_by_permalink(params[:id])
             if taxon
               params.merge!(:taxon => taxon)
             end

@@ -56,7 +56,11 @@ module Spree
       end
 
       protected
-
+      def get_common_base_scope
+        base_scope = Spree::Product.active
+        base_scope = get_products_conditions_for(base_scope, keywords)
+        base_scope = add_search_scopes(base_scope)
+      end
       def get_base_scope
         base_scope = Spree::Product.active
         base_scope = base_scope.in_taxon(taxon) unless taxon.blank?
@@ -90,7 +94,13 @@ module Spree
         @solr_search.execute
         if @solr_search.total > 0
           @hits = @solr_search.hits.collect{|hit| hit.primary_key.to_i}
+
           base_scope = base_scope.where( ["#{Spree::Product.table_name}.id in (?)", @hits] )
+          #order("idx(array[#{@hits.join(',')}], #{Spree::Product.table_name}.id)")
+          #order("#{@hits.join(',')}")
+          base_scope = Spree::Product.find_ordered(@hits)
+          #ordered_results = @hits.collect {|id| base_scope.detect {|x| x.id == id}}
+
         else
           base_scope = base_scope.where( ["#{Spree::Product.table_name}.id = -1"] )
         end
@@ -144,6 +154,7 @@ module Spree
       def ordering_property
         @properties[:order_by] = @properties[:order_by].blank? ? %w(score desc) : @properties[:order_by].split(',')
         @properties[:order_by].flatten
+
       end
       
       private
